@@ -132,6 +132,8 @@ def setup_state():
         st.session_state.custom_system_prompt = load_from_storage("system_prompt") or ""
     if "hide_images" not in st.session_state:
         st.session_state.hide_images = False
+    if "enable_http_logs" not in st.session_state:
+        st.session_state.enable_http_logs = False
     if "token_efficient_tools_beta" not in st.session_state:
         st.session_state.token_efficient_tools_beta = False
     if "in_sampling_loop" not in st.session_state:
@@ -217,6 +219,7 @@ async def main():
             ),
         )
         st.checkbox("Hide screenshots", key="hide_images")
+        st.checkbox("Enable HTTP Exchange Logs", key="enable_http_logs")
         st.checkbox(
             "Enable token-efficient tools beta", key="token_efficient_tools_beta"
         )
@@ -423,9 +426,9 @@ def _api_response_callback(
     tab: DeltaGenerator,
     response_state: dict[str, tuple[httpx.Request, httpx.Response | object | None]],
 ):
-    """
-    Handle an API response by storing it to state and rendering it.
-    """
+    if not st.session_state.enable_http_logs:
+        return
+        
     response_id = datetime.now().isoformat()
     response_state[response_id] = (request, response)
     if error:
